@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <!--
+      旧実装サンプル:
+      SQL本文を Java ではなく hbm.xml に置き、
+      DAO では名前付きSQLの実行と DTO 変換に専念する。
+    -->
+    <sql-query name="LegacyPurchaseOrder.summaryByStatusAliasToBean">
+        <![CDATA[
+            select
+                o.status as status,
+                count(*) as orderCount,
+                sum(o.total) as totalSum
+            from legacy_purchase_orders o
+            where (:status is null or o.status = :status)
+            group by o.status
+            order by o.status
+        ]]>
+    </sql-query>
+
+</hibernate-mapping>
