@@ -46,6 +46,17 @@ public class LegacyOrderDao {
     }
 
     /**
+     * 主キーで注文を取得します。
+     *
+     * @param id 注文ID
+     * @return 見つかった注文。未存在の場合はnull
+     */
+    @Transactional(readOnly = true)
+    public LegacyPurchaseOrder findById(Long id) {
+        return (LegacyPurchaseOrder) currentSession().get(LegacyPurchaseOrder.class, id);
+    }
+
+    /**
      * 作成日時の降順で注文を取得します。
      *
      * @param limit 最大取得件数

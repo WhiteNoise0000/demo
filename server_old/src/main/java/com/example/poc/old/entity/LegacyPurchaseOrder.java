@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Version;
 
 /**
  * 旧実装側の注文エンティティです。
@@ -36,6 +37,10 @@ public class LegacyPurchaseOrder {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
     private Date createdAt;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     /**
      * Hibernate が利用するデフォルトコンストラクタです。
@@ -78,6 +83,10 @@ public class LegacyPurchaseOrder {
         return createdAt;
     }
 
+    public Long getVersion() {
+        return version;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -96,5 +105,9 @@ public class LegacyPurchaseOrder {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

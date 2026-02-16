@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,4 +39,8 @@ public class PurchaseOrder {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 }

@@ -8,7 +8,7 @@ import com.example.poc.entity.PurchaseOrder;
 /**
  * 受注テーブルへのアクセスを担当するSpring Data Repositoryです。
  */
-public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
+public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long>, PurchaseOrderRepositoryCustom {
 
     /**
      * 指定ステータスの受注合計金額を返します。
