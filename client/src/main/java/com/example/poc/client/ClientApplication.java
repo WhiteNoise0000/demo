@@ -33,21 +33,27 @@ public class ClientApplication {
 
         List<OrderSearchView> specRows = client.searchSpecBySpringData(cond);
         List<OrderSearchView> criteriaRows = client.searchCriteriaByEntityManager(cond);
+        List<OrderSearchView> myBatisRows = client.searchDynamicByMyBatis(cond);
         List<OrderSearchView> namedJpqlRows = client.namedJpqlByEntityManager("ali");
         List<OrderStatusSummary> nativeRows = client.namedNativeByEntityManager(null);
         List<OrderStatusSummary> tupleTransformerRows = client.summaryByStatusTupleTransformer(null);
+        List<OrderStatusSummary> myBatisSummaryRows = client.summaryByStatusMyBatis("PAID");
 
         System.out.println("baseUrl=" + baseUrl);
         System.out.println("--- search/spec ---");
         specRows.forEach(System.out::println);
         System.out.println("--- search/criteria ---");
         criteriaRows.forEach(System.out::println);
+        System.out.println("--- search/dynamic/mybatis ---");
+        myBatisRows.forEach(System.out::println);
         System.out.println("--- named/jpql ---");
         namedJpqlRows.forEach(System.out::println);
         System.out.println("--- named/native ---");
         nativeRows.forEach(System.out::println);
         System.out.println("--- summary/tuple-transformer ---");
         tupleTransformerRows.forEach(System.out::println);
+        System.out.println("--- summary/mybatis (PAID) ---");
+        myBatisSummaryRows.forEach(System.out::println);
     }
 
     private static String resolveBaseUrl(String[] args) {

@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 
+import com.example.poc.common.hibernate.NativeQueryExecutor;
 import com.example.poc.common.hibernate.TupleTransformerFactory;
 import com.example.poc.dao.CustomerRepository;
 import com.example.poc.dao.EntityManagerOrderSearchDao;
@@ -25,7 +26,7 @@ import com.example.poc.dto.SearchCond;
 import com.example.poc.entity.OrderSearchView;
 
 @DataJpaTest
-@Import({ EntityManagerOrderSearchDao.class, TupleTransformerFactory.class })
+@Import({ EntityManagerOrderSearchDao.class, TupleTransformerFactory.class, NativeQueryExecutor.class })
 class OrderJpaTest {
 
     @Autowired
@@ -39,6 +40,9 @@ class OrderJpaTest {
 
     @Autowired
     private EntityManagerOrderSearchDao entityManagerOrderSearchDao;
+
+    @Autowired
+    private NativeQueryExecutor nativeQueryExecutor;
 
     @Test
     void derivedQuery_shouldFindCustomerByName() {
@@ -108,6 +112,22 @@ class OrderJpaTest {
     void tupleTransformer_shouldReturnSummary() {
         // Hibernate TupleTransformer版では同じNative SQLからDTOへ変換できる
         List<OrderStatusSummary> summary = entityManagerOrderSearchDao.runNativeWithTupleTransformer("PAID");
+
+        assertThat(summary).hasSize(1);
+        assertThat(summary.get(0).getStatus()).isEqualTo("PAID");
+        assertThat(summary.get(0).getOrderCount()).isEqualTo(3L);
+        assertThat(summary.get(0).getTotalSum()).isEqualTo(960L);
+    }
+
+    @Test
+    void nativeQueryExecutor_shouldMapAliasesToDtoWithInlineSql() {
+        List<OrderStatusSummary> summary = nativeQueryExecutor.list("""
+                select status as status, count(*) as order_count, sum(total) as total_sum
+                from purchase_orders
+                where (:status is null or status = :status)
+                group by status
+                order by status
+                """, java.util.Map.of("status", "PAID"), OrderStatusSummary.class);
 
         assertThat(summary).hasSize(1);
         assertThat(summary.get(0).getStatus()).isEqualTo("PAID");

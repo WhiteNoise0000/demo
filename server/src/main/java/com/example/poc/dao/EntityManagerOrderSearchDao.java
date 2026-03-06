@@ -1,6 +1,7 @@
 package com.example.poc.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
@@ -11,10 +12,9 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
-import org.hibernate.query.NativeQuery;
 import org.springframework.stereotype.Repository;
 
-import com.example.poc.common.hibernate.TupleTransformerFactory;
+import com.example.poc.common.hibernate.NativeQueryExecutor;
 import com.example.poc.dto.OrderStatusSummary;
 import com.example.poc.dto.SearchCond;
 import com.example.poc.entity.OrderSearchView;
@@ -32,7 +32,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class EntityManagerOrderSearchDao {
 
-    private final TupleTransformerFactory tupleTransformerFactory;
+    private final NativeQueryExecutor nativeQueryExecutor;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -112,17 +112,10 @@ public class EntityManagerOrderSearchDao {
      * @param status 集計対象のステータス（null時は全件）
      * @return ステータス別集計
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<OrderStatusSummary> runNativeWithTupleTransformer(String status) {
-        // SQLは orm.xml の Named Native Query に寄せ、DAO側は実行と変換に専念する。
-        NativeQuery nativeQuery = entityManager
-                .createNamedQuery("OrderSearchView.summaryByStatusNativeForTupleTransformer")
-                .setParameter("status", status)
-                .unwrap(NativeQuery.class);
-
-        // DTO型をキーにFactoryから共有Transformerを取得し、都度newを避ける。
-        NativeQuery<OrderStatusSummary> mappedQuery = nativeQuery
-                .setTupleTransformer(tupleTransformerFactory.aliasToBean(OrderStatusSummary.class));
-        return mappedQuery.getResultList();
+        return nativeQueryExecutor.namedList(
+                "OrderSearchView.summaryByStatusNativeForTupleTransformer",
+                Collections.singletonMap("status", status),
+                OrderStatusSummary.class);
     }
 }

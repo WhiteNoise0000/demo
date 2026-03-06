@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.poc.dao.mybatis.OrderSearchMyBatisMapper">
+
+    <select id="searchOrders"
+            parameterType="com.example.poc.dto.SearchCond"
+            resultType="com.example.poc.entity.OrderSearchView">
+        select
+            o.id as id,
+            c.name as customer_name,
+            o.status,
+            o.total,
+            o.created_at
+        from purchase_orders o
+        join customers c on c.id = o.customer_id
+        <where>
+            <if test="customerNameKeyword != null and customerNameKeyword != ''">
+                lower(c.name) like concat('%', lower(#{customerNameKeyword}), '%')
+            </if>
+            <if test="statuses != null and statuses.size() > 0">
+                and o.status in
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="createdAtFrom != null">
+                and o.created_at <![CDATA[>=]]> #{createdAtFrom}
+            </if>
+            <if test="createdAtTo != null">
+                and o.created_at <![CDATA[<=]]> #{createdAtTo}
+            </if>
+            <if test="totalGte != null">
+                and o.total <![CDATA[>=]]> #{totalGte}
+            </if>
+        </where>
+        order by o.created_at desc
+    </select>
+
+    <select id="summarizeByStatus"
+            resultType="com.example.poc.dto.OrderStatusSummary">
+        select
+            status,
+            count(*) as order_count,
+            sum(total) as total_sum
+        from purchase_orders
+        <where>
+            <if test="status != null and status != ''">
+                status = #{status}
+            </if>
+        </where>
+        group by status
+        order by status
+    </select>
+
+</mapper>

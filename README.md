@@ -19,6 +19,17 @@
 - EntityManager パターン:
   - `EntityManagerOrderSearchPattern`
   - `EntityManagerOrderSearchDao`
+  - `NativeQueryExecutor`
+- MyBatis パターン:
+  - `MyBatisOrderSearchPattern`
+  - `OrderSearchMyBatisMapper`
+  - `mappers/OrderSearchMyBatisMapper.xml`
+
+`NativeQueryExecutor` は Hibernate `TupleTransformer` を内部で使い、
+`SQL + named params + DTO class` だけで alias ベースの DTO マッピングを行う補助コンポーネントです。
+
+MyBatis サンプルでは `<where>`, `<if>`, `<foreach>` を使い、
+「条件が入ったときだけ WHERE / IN / 範囲条件を付与する」動的SQLを比較できます。
 
 同じ `OrderService` 契約を使い、実装パターンだけを差し替えて比較できる構成です。
 
