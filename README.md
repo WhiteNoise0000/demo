@@ -9,6 +9,56 @@
 - `client`: `RestClient + HttpServiceProxyFactory` で `server` の API を呼び出すクライアント
 - `server_old`: Spring Framework 4.2 + Hibernate 5.1 の旧実装サンプル（CLI）
 
+## client の例外処理 PoC
+
+`client` プロジェクトでは、`@HttpExchange` クライアントのエラー処理を
+できるだけ小さな構成で確認できるようにしています。
+
+設計方針は次の通りです。
+
+- Spring の Bean 定義は使わず、`OrderServiceClients.create(baseUrl)` で都度クライアント生成
+- HTTP エラーは `ProblemDetailResponseErrorHandler` で一括処理
+- まず Spring 標準の `DefaultResponseErrorHandler` に HTTP 例外化を委譲
+- その後、レスポンスボディを `ProblemDetail` として読み直し、`RemoteApiException` へ統一変換
+- 呼び出し側は例外クラスを細かく分けず、`status` / `errorCode` / `isRetryable()` を見て分岐
+
+処理の流れは次の順です。
+
+1. `OrderServiceClients` が `RestClient` に共通エラーハンドラを設定する
+2. `HttpServiceProxyFactory` が `OrderService` の HTTP Interface 実装を生成する
+3. API 呼び出しで 4xx / 5xx が返る
+4. `DefaultResponseErrorHandler` が `RestClientResponseException` を生成する
+5. `ProblemDetailResponseErrorHandler` がその例外から `ProblemDetail` を復元する
+6. `RemoteApiException` が `status` / `code` / `detail` / `path` をまとめて保持する
+
+呼び出し側の扱いは次のイメージです。
+
+```java
+try {
+    client.namedJpqlByEntityManager("ali");
+} catch (RemoteApiException ex) {
+    switch (ex.getErrorCode()) {
+        case OPTIMISTIC_LOCK_CONFLICT, DB_LOCK_CONFLICT -> {
+            // 再読込やリトライを検討
+        }
+        case BAD_REQUEST -> {
+            // 入力値の見直し
+        }
+        default -> {
+            // 共通エラー処理
+        }
+    }
+} catch (ResourceAccessException ex) {
+    // 接続拒否、名前解決失敗、ソケットタイムアウトなど
+}
+```
+
+この構成にしている理由は、PoC で見たいポイントが
+「Spring の HTTP Interface をどう作るか」と
+「サーバが返す `ProblemDetail` をどうクライアント例外へ寄せるか」
+の2点だからです。Bean 化や複雑な例外階層はあえて持ち込まず、
+流れが追いやすい最小構成に寄せています。
+
 ## 新実装の比較用クラス構成（server）
 
 - API入口: `OrderPatternComparisonController`
