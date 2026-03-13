@@ -50,6 +50,15 @@ public interface OrderService {
     List<OrderSearchView> searchDynamicByMyBatis(@RequestBody SearchCond cond);
 
     /**
+     * NamedParameterJdbcTemplate で動的 SQL を組み立てて検索を行います。
+     *
+     * @param cond 検索条件
+     * @return 条件に一致した受注一覧
+     */
+    @PostExchange("/search/dynamic/jdbc-template")
+    List<OrderSearchView> searchDynamicByJdbcTemplate(@RequestBody SearchCond cond);
+
+    /**
      * EntityManager 経由で Named JPQL を実行します。
      *
      * @param kw 顧客名の部分一致キーワード
@@ -102,4 +111,13 @@ public interface OrderService {
      */
     @GetExchange("/summary/mybatis")
     List<OrderStatusSummary> summaryByStatusMyBatis(@RequestParam(required = false) String status);
+
+    /**
+     * NamedParameterJdbcTemplate + BeanPropertyRowMapper で Native SQL 集計を実行します。
+     *
+     * @param status 集計対象ステータス（null時は全件）
+     * @return ステータス別集計
+     */
+    @GetExchange("/summary/jdbc-template")
+    List<OrderStatusSummary> summaryByStatusJdbcTemplate(@RequestParam(required = false) String status);
 }

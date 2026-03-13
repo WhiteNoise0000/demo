@@ -70,6 +70,10 @@ try {
   - `EntityManagerOrderSearchPattern`
   - `EntityManagerOrderSearchDao`
   - `NativeQueryExecutor`
+- JdbcTemplate パターン:
+  - `JdbcTemplateOrderSearchPattern`
+  - `JdbcTemplateOrderSearchDao`
+  - `JdbcDaoBase`
 - MyBatis パターン:
   - `MyBatisOrderSearchPattern`
   - `OrderSearchMyBatisMapper`
@@ -77,6 +81,10 @@ try {
 
 `NativeQueryExecutor` は Hibernate `TupleTransformer` を内部で使い、
 `SQL + named params + DTO class` だけで alias ベースの DTO マッピングを行う補助コンポーネントです。
+
+`JdbcTemplateOrderSearchDao` は Java text block の SQL と `BeanPropertyRowMapper` を使い、
+旧 `AliasToBeanResultTransformer` に近い「alias から DTO/Bean へ寄せる」感覚を
+Spring JDBC 上で比較できるようにしています。
 
 MyBatis サンプルでは `<where>`, `<if>`, `<foreach>` を使い、
 「条件が入ったときだけ WHERE / IN / 範囲条件を付与する」動的SQLを比較できます。

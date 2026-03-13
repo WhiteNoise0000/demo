@@ -9,6 +9,7 @@ import com.example.poc.dto.SearchCond;
 import com.example.poc.entity.OrderSearchView;
 import com.example.poc.service.OrderService;
 import com.example.poc.service.pattern.EntityManagerOrderSearchPattern;
+import com.example.poc.service.pattern.JdbcTemplateOrderSearchPattern;
 import com.example.poc.service.pattern.MyBatisOrderSearchPattern;
 import com.example.poc.service.pattern.SpringDataOrderSearchPattern;
 
@@ -28,6 +29,7 @@ public class OrderPatternComparisonController implements OrderService {
     private final SpringDataOrderSearchPattern springDataPattern;
     private final EntityManagerOrderSearchPattern entityManagerPattern;
     private final MyBatisOrderSearchPattern myBatisPattern;
+    private final JdbcTemplateOrderSearchPattern jdbcTemplatePattern;
 
     /**
      * {@inheritDoc}
@@ -60,6 +62,17 @@ public class OrderPatternComparisonController implements OrderService {
     @Override
     public List<OrderSearchView> searchDynamicByMyBatis(SearchCond cond) {
         return myBatisPattern.searchDynamically(cond);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * NamedParameterJdbcTemplate の動的SQL実装へ委譲します。
+     * </p>
+     */
+    @Override
+    public List<OrderSearchView> searchDynamicByJdbcTemplate(SearchCond cond) {
+        return jdbcTemplatePattern.searchDynamically(cond);
     }
 
     /**
@@ -126,5 +139,16 @@ public class OrderPatternComparisonController implements OrderService {
     @Override
     public List<OrderStatusSummary> summaryByStatusMyBatis(String status) {
         return myBatisPattern.summarizeByStatus(status);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * NamedParameterJdbcTemplate + BeanPropertyRowMapper 実装の集計SQLを実行します。
+     * </p>
+     */
+    @Override
+    public List<OrderStatusSummary> summaryByStatusJdbcTemplate(String status) {
+        return jdbcTemplatePattern.summarizeByStatus(status);
     }
 }
