@@ -60,6 +60,29 @@ class OrderJpaTest {
     }
 
     @Test
+    void jdbcTemplateQueryAnnotation_shouldLoadSqlFileAndMapDto() {
+        // default メソッド経由でも、独自アノテーション付きRepositoryメソッドへ委譲して DTO へ変換できる
+        List<OrderStatusSummary> summary = purchaseOrderRepository.summarizePaidWithJdbc();
+
+        assertThat(summary).hasSize(1);
+        assertThat(summary.get(0).getStatus()).isEqualTo("PAID");
+        assertThat(summary.get(0).getOrderCount()).isEqualTo(3L);
+        assertThat(summary.get(0).getTotalSum()).isEqualTo(960L);
+    }
+
+    @Test
+    void repositoryDefaultCriteria_shouldFilterPurchaseOrders() {
+        // custom fragment の default メソッドから Criteria API を組み立てて検索できる
+        SearchCond cond = new SearchCond();
+        cond.setCustomerNameKeyword("ali");
+        cond.setStatuses(Set.of("PAID", "SHIPPED"));
+
+        var rows = purchaseOrderRepository.searchByCriteria(cond, 10);
+
+        assertThat(rows).extracting("id").containsExactly(1007L, 1003L);
+    }
+
+    @Test
     void specification_shouldFilterDynamically() {
         // Specificationで条件を積み上げ、動的WHEREが期待通り合成されることを確認する
         SearchCond cond = new SearchCond();

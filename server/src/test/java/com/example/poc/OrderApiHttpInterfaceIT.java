@@ -48,13 +48,13 @@ class OrderApiHttpInterfaceIT {
     }
 
     /**
-     * Specification / Criteria / Named Query の主要APIが正常に呼び出せることを確認します。
+     * Specification / Criteria / JdbcTemplate / Named Query の主要APIが正常に呼び出せることを確認します。
      *
      * @throws Exception テスト実行時に例外が発生した場合
      */
     @Test
     void shouldCallSearchSpecAndCriteriaAndNamedQueries() {
-        // HTTP Interface経由で、JPA/EntityManager/MyBatis の各APIを一通り疎通確認する
+        // HTTP Interface経由で、JPA/EntityManager/JdbcTemplate の各APIを一通り疎通確認する
         SearchCond cond = new SearchCond();
         cond.setStatuses(Set.of("PAID", "SHIPPED"));
         cond.setTotalGte(new BigDecimal("100.00"));
@@ -62,31 +62,25 @@ class OrderApiHttpInterfaceIT {
 
         List<OrderSearchView> specRows = client.searchSpecBySpringData(cond);
         List<OrderSearchView> criteriaRows = client.searchCriteriaByEntityManager(cond);
-        List<OrderSearchView> myBatisRows = client.searchDynamicByMyBatis(cond);
         List<OrderSearchView> jdbcTemplateRows = client.searchDynamicByJdbcTemplate(cond);
         List<OrderSearchView> jpqlRows = client.namedJpqlByEntityManager("ali");
         List<OrderStatusSummary> nativeRows = client.namedNativeByEntityManager(null);
         List<OrderSearchView> jpqlRowsSpringData = client.namedJpqlBySpringData("ali"); // Spring Data JPA版
         List<OrderStatusSummary> nativeRowsSpringData = client.namedNativeBySpringData(null); // Spring Data JPA版
         List<OrderStatusSummary> tupleTransformerRows = client.summaryByStatusTupleTransformer(null); // TupleTransformer版
-        List<OrderStatusSummary> myBatisSummaryRows = client.summaryByStatusMyBatis("PAID"); // MyBatis版
         List<OrderStatusSummary> jdbcTemplateSummaryRows = client.summaryByStatusJdbcTemplate("PAID"); // JdbcTemplate版
 
         assertThat(specRows).isNotEmpty();
         assertThat(criteriaRows).isNotEmpty();
-        assertThat(myBatisRows).isNotEmpty();
         assertThat(jdbcTemplateRows).isNotEmpty();
         assertThat(jpqlRows).hasSize(3);
         assertThat(nativeRows).isNotEmpty();
         assertThat(jpqlRowsSpringData).hasSize(jpqlRows.size());
         assertThat(nativeRowsSpringData).hasSize(nativeRows.size());
         assertThat(tupleTransformerRows).hasSize(nativeRows.size());
-        assertThat(myBatisSummaryRows).hasSize(1);
         assertThat(jdbcTemplateSummaryRows).hasSize(1);
 
         // 比較しやすいように、件数だけでなく主要項目の並びも一致させる
-        assertThat(myBatisRows.stream().map(OrderSearchView::getId).toList())
-                .containsExactlyElementsOf(specRows.stream().map(OrderSearchView::getId).toList());
         assertThat(jdbcTemplateRows.stream().map(OrderSearchView::getId).toList())
                 .containsExactlyElementsOf(specRows.stream().map(OrderSearchView::getId).toList());
         assertThat(jpqlRowsSpringData.stream().map(OrderSearchView::getId).toList())
@@ -103,9 +97,6 @@ class OrderApiHttpInterfaceIT {
                 .containsExactlyElementsOf(nativeRows.stream().map(OrderStatusSummary::getOrderCount).toList());
         assertThat(tupleTransformerRows.stream().map(OrderStatusSummary::getTotalSum).toList())
                 .containsExactlyElementsOf(nativeRows.stream().map(OrderStatusSummary::getTotalSum).toList());
-        assertThat(myBatisSummaryRows.get(0).getStatus()).isEqualTo("PAID");
-        assertThat(myBatisSummaryRows.get(0).getOrderCount()).isEqualTo(3L);
-        assertThat(myBatisSummaryRows.get(0).getTotalSum()).isEqualTo(960L);
         assertThat(jdbcTemplateSummaryRows.get(0).getStatus()).isEqualTo("PAID");
         assertThat(jdbcTemplateSummaryRows.get(0).getOrderCount()).isEqualTo(3L);
         assertThat(jdbcTemplateSummaryRows.get(0).getTotalSum()).isEqualTo(960L);

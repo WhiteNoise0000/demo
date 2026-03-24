@@ -64,7 +64,7 @@ class OrderOptimisticLockComparisonTest {
     }
 
     @Test
-    void saveOrUpdateLikeLegacy_shouldInsertWhenNotPersistedAndVersionZero() {
+    void saveOrUpdate_shouldInsertWhenNotPersistedAndVersionZero() {
         PurchaseOrder order = new PurchaseOrder();
         order.setId(9101L);
         order.setCustomerId(1L);
@@ -73,35 +73,35 @@ class OrderOptimisticLockComparisonTest {
         order.setCreatedAt(Instant.parse("2026-02-01T00:00:00Z"));
         order.setVersion(0L);
 
-        PurchaseOrder inserted = purchaseOrderRepository.saveOrUpdateLikeLegacy(order);
+        PurchaseOrder inserted = purchaseOrderRepository.saveOrUpdate(order);
 
         assertThat(inserted.getVersion()).isEqualTo(0L);
         assertThat(purchaseOrderRepository.isPersisted(9101L)).isTrue();
     }
 
     @Test
-    void saveOrUpdateLikeLegacy_shouldIncrementVersionForUpdate() {
+    void saveOrUpdate_shouldIncrementVersionForUpdate() {
         PurchaseOrder current = purchaseOrderRepository.findById(1003L).orElseThrow();
         PurchaseOrder detached = detachedCopy(current);
         detached.setStatus("PAID");
 
-        PurchaseOrder updated = purchaseOrderRepository.saveOrUpdateLikeLegacy(detached);
+        PurchaseOrder updated = purchaseOrderRepository.saveOrUpdate(detached);
 
         assertThat(updated.getVersion()).isEqualTo(1L);
         assertThat(updated.getStatus()).isEqualTo("PAID");
     }
 
     @Test
-    void saveOrUpdateLikeLegacy_shouldRejectStaleVersion() {
+    void saveOrUpdate_shouldRejectStaleVersion() {
         PurchaseOrder current = purchaseOrderRepository.findById(1004L).orElseThrow();
         PurchaseOrder latest = detachedCopy(current);
         PurchaseOrder stale = detachedCopy(current);
 
         latest.setStatus("SHIPPED");
-        purchaseOrderRepository.saveOrUpdateLikeLegacy(latest);
+        purchaseOrderRepository.saveOrUpdate(latest);
 
         stale.setStatus("CANCELLED");
-        assertThatThrownBy(() -> purchaseOrderRepository.saveOrUpdateLikeLegacy(stale))
+        assertThatThrownBy(() -> purchaseOrderRepository.saveOrUpdate(stale))
                 .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 

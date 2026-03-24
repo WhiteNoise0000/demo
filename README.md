@@ -66,6 +66,9 @@ try {
   - `SpringDataOrderSearchPattern`
   - `SpringDataOrderSearchViewRepository`
   - `OrderSearchSpecificationFactory`
+  - `PurchaseOrderRepository`
+  - `PurchaseOrderRepositoryCustom`
+  - `dao/jdbcquery/*`
 - EntityManager パターン:
   - `EntityManagerOrderSearchPattern`
   - `EntityManagerOrderSearchDao`
@@ -74,10 +77,6 @@ try {
   - `JdbcTemplateOrderSearchPattern`
   - `JdbcTemplateOrderSearchDao`
   - `JdbcDaoBase`
-- MyBatis パターン:
-  - `MyBatisOrderSearchPattern`
-  - `OrderSearchMyBatisMapper`
-  - `mappers/OrderSearchMyBatisMapper.xml`
 
 `NativeQueryExecutor` は Hibernate `TupleTransformer` を内部で使い、
 `SQL + named params + DTO class` だけで alias ベースの DTO マッピングを行う補助コンポーネントです。
@@ -86,8 +85,13 @@ try {
 旧 `AliasToBeanResultTransformer` に近い「alias から DTO/Bean へ寄せる」感覚を
 Spring JDBC 上で比較できるようにしています。
 
-MyBatis サンプルでは `<where>`, `<if>`, `<foreach>` を使い、
-「条件が入ったときだけ WHERE / IN / 範囲条件を付与する」動的SQLを比較できます。
+`PurchaseOrderRepositoryCustom` は Spring Data JPA の custom fragment を使い、
+`default` メソッドから `EntityManager` を呼んで Criteria API と
+移行過渡期の `saveOrUpdate` を扱うサンプルです。
+
+`@JdbcTemplateQuery` は Spring Data JPA Repository の無実装メソッドへ付与し、
+既定で `sql/<RepositorySimpleName>.<methodName>.sql` を読んで
+`NamedParameterJdbcTemplate` を実行するサンプルです。
 
 同じ `OrderService` 契約を使い、実装パターンだけを差し替えて比較できる構成です。
 

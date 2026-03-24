@@ -9,7 +9,9 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 
 import com.example.poc.dao.jdbc.JdbcTemplateOrderSearchDao;
@@ -17,9 +19,14 @@ import com.example.poc.dto.OrderStatusSummary;
 import com.example.poc.dto.SearchCond;
 import com.example.poc.entity.OrderSearchView;
 
-@JdbcTest
+@SpringBootTest(classes = JdbcTemplateOrderSearchDaoTest.TestApplication.class)
 @Import(JdbcTemplateOrderSearchDao.class)
 class JdbcTemplateOrderSearchDaoTest {
+
+    @TestConfiguration(proxyBeanMethods = false)
+    @EnableAutoConfiguration
+    static class TestApplication {
+    }
 
     @Autowired
     private JdbcTemplateOrderSearchDao dao;

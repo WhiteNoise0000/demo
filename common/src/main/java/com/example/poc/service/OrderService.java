@@ -41,15 +41,6 @@ public interface OrderService {
     List<OrderSearchView> searchCriteriaByEntityManager(@RequestBody SearchCond cond);
 
     /**
-     * MyBatis の動的SQLで条件付き検索を行います。
-     *
-     * @param cond 検索条件
-     * @return 条件に一致した受注一覧
-     */
-    @PostExchange("/search/dynamic/mybatis")
-    List<OrderSearchView> searchDynamicByMyBatis(@RequestBody SearchCond cond);
-
-    /**
      * NamedParameterJdbcTemplate で動的 SQL を組み立てて検索を行います。
      *
      * @param cond 検索条件
@@ -102,15 +93,6 @@ public interface OrderService {
      */
     @GetExchange("/summary/tuple-transformer/entity-manager")
     List<OrderStatusSummary> summaryByStatusTupleTransformer(@RequestParam(required = false) String status);
-
-    /**
-     * MyBatis で Native SQL 集計を実行します。
-     *
-     * @param status 集計対象ステータス（null時は全件）
-     * @return ステータス別集計
-     */
-    @GetExchange("/summary/mybatis")
-    List<OrderStatusSummary> summaryByStatusMyBatis(@RequestParam(required = false) String status);
 
     /**
      * NamedParameterJdbcTemplate + BeanPropertyRowMapper で Native SQL 集計を実行します。

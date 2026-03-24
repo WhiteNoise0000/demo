@@ -101,7 +101,7 @@ class OrderServiceClientsTest {
     @Test
     void shouldTranslateGatewayTimeoutProblemToDedicatedException() {
         // 504 は ProblemDetail.code から再試行候補に判定できる。
-        server.expect(requestTo(BASE_URL + "/orders/summary/mybatis?status=PAID"))
+        server.expect(requestTo(BASE_URL + "/orders/summary/jdbc-template?status=PAID"))
                 .andExpect(method(GET))
                 .andRespond(withStatus(HttpStatus.GATEWAY_TIMEOUT)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -115,7 +115,7 @@ class OrderServiceClientsTest {
                                 }
                                 """));
 
-        assertThatThrownBy(() -> client.summaryByStatusMyBatis("PAID"))
+        assertThatThrownBy(() -> client.summaryByStatusJdbcTemplate("PAID"))
                 .isInstanceOf(RemoteApiException.class)
                 .satisfies(ex -> {
                     RemoteApiException apiException = (RemoteApiException) ex;
